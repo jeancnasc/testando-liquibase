@@ -82,7 +82,7 @@
                                 </restartPolicy>
                                 <volumes>
                                     <bind>
-                                        <volume>${project.build.directory}/opt/oracle/oradata:/opt/oracle/oradata</volume>
+                                        <volume>oradata:/opt/oracle/oradata</volume>
                                         <volume>${project.build.directory}/opt/oracle/scripts/setup:/opt/oracle/scripts/setup</volume>
                                     </bind>
                                 </volumes>
@@ -97,6 +97,11 @@
                         </image>
 
                     </images>
+                    <volumes>
+                        <volume>
+                            <name>oradata</name>
+                        </volume>
+                    </volumes>
                 </configuration>
             </plugin>
             <plugin>
