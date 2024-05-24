@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>br.com.jeancnasc.testando</groupId>
     <artifactId>testando-liquibase</artifactId>
     <packaging>jar</packaging>
     <version>1.0-SNAPSHOT</version>
     <name>spring-api-client</name>
-    <url>http://maven.apache.org</url>
+    <url>https://github.com/jeancnasc/testando-liquibase</url>
 
 
     <properties>
@@ -65,7 +65,7 @@
                     <containerNamePattern>db</containerNamePattern>
                     <images>
                         <image>
-                            <name>jeancnasc/personal-repository:oracle-database-19.3.0-entreprise-single</name>
+                            <name>container-registry.oracle.com/database/enterprise:21.3.0.0</name>
                             <alias>db</alias>
                             <run>
                                 <ports>
