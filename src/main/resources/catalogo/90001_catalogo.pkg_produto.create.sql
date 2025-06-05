@@ -1,5 +1,5 @@
 --liquibase formatted sql
---changeset jean.nascimento:catalogo_pkg_produto_create runOnChange:true
+--changeset jean.nascimento:catalogo_pkg_produto_create runOnChange:true dbms:oracle
 --Create a new Package
 
 CREATE OR REPLACE PACKAGE CATALOGO.PKG_PRODUTO IS

@@ -16,6 +16,144 @@
         <maven.compiler.target>1.10</maven.compiler.target>
     </properties>
 
+    <profiles>
+        <profile>
+            <id>postgresql</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <liquibase.changeLogFile>dbchangelog.xml</liquibase.changeLogFile>
+                <liquibase.url>jdbc:postgresql://localhost:5432/postgres</liquibase.url>
+                <liquibase.username>postgres</liquibase.username>
+                <liquibase.password>123456</liquibase.password>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>io.fabric8</groupId>
+                        <artifactId>docker-maven-plugin</artifactId>
+                        <version>0.38.1</version>
+                        <configuration>
+                            <containerNamePattern>db</containerNamePattern>
+                            <images>
+                                <image>
+                                    <name>postgres:17.5-alpine3.22</name>
+                                    <alias>db</alias>
+                                    <run>
+                                        <ports>
+                                            <port>5432:5432</port>
+                                        </ports>
+                                        <env>
+                                            <POSTGRES_PASSWORD>123456</POSTGRES_PASSWORD>
+                                        </env>
+                                        <restartPolicy>
+                                            <name>always</name>
+                                        </restartPolicy>
+                                        <volumes>
+                                            <bind>
+                                                <volume>postgresdata:/var/lib/postgresql/data</volume>
+                                            </bind>
+                                        </volumes>
+                                        <wait>
+                                            <log>database system is ready to accept connections</log>
+                                            <time>3600000</time>
+                                        </wait>
+                                        <log>
+                                            <enabled>false</enabled>
+                                        </log>
+                                    </run>
+                                </image>
+
+                            </images>
+                            <volumes>
+                                <volume>
+                                    <name>postgresdata</name>
+                                </volume>
+                            </volumes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+            <dependencies>
+                <dependency>
+                    <groupId>org.postgresql</groupId>
+                    <artifactId>postgresql</artifactId>
+                    <version>42.6.0</version>
+                </dependency>
+            </dependencies>
+        </profile>
+        <profile>
+            <id>oracle</id>
+            <properties>
+                <liquibase.changeLogFile>dbchangelog.xml</liquibase.changeLogFile>
+                <liquibase.url>jdbc:oracle:thin:@//localhost:1521/ORCLPDB1</liquibase.url>
+                <liquibase.username>SYS as SYSDBA</liquibase.username>
+                <liquibase.password>123456</liquibase.password>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>io.fabric8</groupId>
+                        <artifactId>docker-maven-plugin</artifactId>
+                        <version>0.38.1</version>
+                        <configuration>
+                            <containerNamePattern>db</containerNamePattern>
+                            <images>
+                                <image>
+                                    <name>container-registry.oracle.com/database/enterprise:21.3.0.0</name>
+                                    <alias>db</alias>
+                                    <run>
+                                        <ports>
+                                            <port>1521:1521</port>
+                                            <port>5500:5500</port>
+                                        </ports>
+                                        <env>
+                                            <ORACLE_SID>ORCLCDB</ORACLE_SID>
+                                            <ORACLE_PDB>ORCLPDB1</ORACLE_PDB>
+                                            <ORACLE_PWD>123456</ORACLE_PWD>
+                                        </env>
+                                        <restartPolicy>
+                                            <name>always</name>
+                                        </restartPolicy>
+                                        <volumes>
+                                            <bind>
+                                                <volume>oradata:/opt/oracle/oradata</volume>
+                                                <volume>
+                                                    ${project.build.directory}/opt/oracle/scripts/setup:/opt/oracle/scripts/setup
+                                                </volume>
+                                            </bind>
+                                        </volumes>
+                                        <wait>
+                                            <log>DATABASE IS READY TO USE!</log>
+                                            <time>3600000</time>
+                                        </wait>
+                                        <log>
+                                            <enabled>false</enabled>
+                                        </log>
+                                    </run>
+                                </image>
+
+                            </images>
+                            <volumes>
+                                <volume>
+                                    <name>oradata</name>
+                                </volume>
+                            </volumes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+            <dependencies>
+                <dependency>
+                    <groupId>com.oracle.database.jdbc</groupId>
+                    <artifactId>ojdbc8</artifactId>
+                    <version>19.3.0.0</version>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
+
     <build>
         <plugins>
             <plugin>
@@ -50,6 +188,8 @@
                         <id>start</id>
                         <phase>pre-integration-test</phase>
                         <goals>
+                            <goal>stop</goal>
+                            <goal>volume-remove</goal>
                             <goal>start</goal>
                         </goals>
                     </execution>
@@ -61,56 +201,11 @@
                         </goals>
                     </execution>
                 </executions>
-                <configuration>
-                    <containerNamePattern>db</containerNamePattern>
-                    <images>
-                        <image>
-                            <name>container-registry.oracle.com/database/enterprise:21.3.0.0</name>
-                            <alias>db</alias>
-                            <run>
-                                <ports>
-                                    <port>1521:1521</port>
-                                    <port>5500:5500</port>
-                                </ports>
-                                <env>
-                                    <ORACLE_SID>ORCLCDB</ORACLE_SID>
-                                    <ORACLE_PDB>ORCLPDB1</ORACLE_PDB>
-                                    <ORACLE_PWD>123456</ORACLE_PWD>
-                                </env>
-                                <restartPolicy>
-                                    <name>always</name>
-                                </restartPolicy>
-                                <volumes>
-                                    <bind>
-                                        <volume>oradata:/opt/oracle/oradata</volume>
-                                        <volume>${project.build.directory}/opt/oracle/scripts/setup:/opt/oracle/scripts/setup</volume>
-                                    </bind>
-                                </volumes>
-                                <wait>
-                                    <log>DATABASE IS READY TO USE!</log>
-                                    <time>3600000</time>
-                                </wait>
-                                <log>
-                                    <enabled>false</enabled>
-                                </log>
-                            </run>
-                        </image>
-
-                    </images>
-                    <volumes>
-                        <volume>
-                            <name>oradata</name>
-                        </volume>
-                    </volumes>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.liquibase</groupId>
                 <artifactId>liquibase-maven-plugin</artifactId>
                 <version>3.8.0</version>
-                <configuration>
-                    <propertyFile>src/main/resources/liquibase.properties</propertyFile>
-                </configuration>
                 <executions>
                     <execution>
                         <id>clean</id>
@@ -132,15 +227,7 @@
         </plugins>
     </build>
 
-    <dependencies>
 
-        <dependency>
-            <groupId>com.oracle.database.jdbc</groupId>
-            <artifactId>ojdbc8</artifactId>
-            <version>19.3.0.0</version>
-        </dependency>
-
-    </dependencies>
 
 
 </project>

@@ -1,5 +1,5 @@
 --liquibase formatted sql
---changeset jean.nascimento:catalogo_pkg_produto_body runOnChange:true
+--changeset jean.nascimento:catalogo_pkg_produto_body runOnChange:true dbms:oracle
 
 --Create a new Package Body
 
